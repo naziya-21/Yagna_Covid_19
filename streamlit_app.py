@@ -1,55 +1,73 @@
 import streamlit as st
-import pandas as pd
+import json
 
-# Configure the app
-st.set_page_config(page_title="COVID-19 Tracking and Info App")
-st.sidebar.header("COVID-19 Tracker")
-st.sidebar.write("Stay updated with real-time COVID-19 data.")
+# Function to display API request and simulated response
+def display_api_output(url, method, headers, body, status_code, response_body):
+    st.write("### Request")
+    st.write(f"**URL:** {url}")
+    st.write(f"**Method:** {method}")
+    if headers:
+        st.write(f"**Headers:** {json.dumps(headers, indent=2)}")
+    if body:
+        st.write(f"**Body:** {json.dumps(body, indent=2)}")
+    
+    # Simulated response
+    st.write("### Response")
+    st.write(f"**Status Code:** {status_code}")
+    st.write(f"**Body:** {json.dumps(response_body, indent=2)}")
 
-# Load data
-@st.cache_data
-def load_data():
-    # Replace with the path to your CSV file
-    url = "country_wise_latest.csv"
-  # Ensure this path is correct
-    try:
-        data = pd.read_csv(url)
-    except FileNotFoundError:
-        st.error("CSV file not found. Please check the file path.")
-        return pd.DataFrame()  # Return an empty DataFrame in case of error
-    return data
+# Title of the app
+st.title("COVID-19 Tracking API Outputs")
 
-# Load the COVID-19 data
-covid_data = load_data()
+# Screenshot 1: GET /covid/cases
+st.header("Screenshot 1: GET /covid/cases")
+url1 = "https://your-api-endpoint.com/covid/cases"
+method1 = "GET"
+headers1 = {"Authorization": "Bearer your_token"}  # Example header
+body1 = None
+response_body1 = {
+    "region": "India",
+    "totalCases": 100000,
+    "activeCases": 50000,
+    "recovered": 40000,
+    "deaths": 10000
+}
+display_api_output(url1, method1, headers1, body1, 200, response_body1)
 
-# Display the app header
-st.header("COVID-19 Tracking and Information")
-st.subheader("Real-time updates on COVID-19 cases, vaccination, and hospital resources.")
+# Screenshot 2: GET /covid/cases/{region}
+st.header("Screenshot 2: GET /covid/cases/{region}")
+url2 = "https://your-api-endpoint.com/covid/cases/India"
+method2 = "GET"
+headers2 = {"Authorization": "Bearer your_token"}  # Example header
+body2 = None
+response_body2 = {
+    "region": "India",
+    "totalCases": 100000,
+    "activeCases": 50000,
+    "recovered": 40000,
+    "deaths": 10000,
+    "vaccinationProgress": {
+        "totalDoses": 1000000,
+        "percentageVaccinated": 20
+    },
+    "hospitalResources": {
+        "beds": 1000,
+        "ventilators": 200,
+        "icuCapacity": 50
+    }
+}
+display_api_output(url2, method2, headers2, body2, 200, response_body2)
 
-# Display COVID-19 cases
-if not covid_data.empty:
-    if st.checkbox("Show COVID-19 Case Data"):
-        st.write("### Global and Regional COVID-19 Case Numbers")
-        st.write(covid_data)
-
-    # Filter data by region
-    if "region" in covid_data.columns:
-        selected_region = st.selectbox("Select a Region", covid_data["region"].unique())
-        filtered_data = covid_data[covid_data["region"] == selected_region]
-
-        # Display region-specific data
-        st.write(f"### COVID-19 Statistics for {selected_region}")
-        st.write(filtered_data)
-
-        # Display vaccination status
-        if st.checkbox("Show Vaccination Status"):
-            st.write("### Vaccination Progress")
-            st.write(filtered_data[["region", "doses_given", "percent_vaccinated"]])
-
-        # Display hospital resources
-        if st.checkbox("Show Hospital Resources"):
-            st.write("### Hospital Resources Availability")
-            st.write(filtered_data[["region", "beds", "ventilators", "icu_capacity"]])
-
-# Footer
-st.write("Stay safe and stay informed with the COVID-19 Tracker.")
+# Screenshot 3: POST /covid/cases/update
+st.header("Screenshot 3: POST /covid/cases/update")
+url3 = "https://your-api-endpoint.com/covid/cases/update"
+method3 = "POST"
+headers3 = {"Authorization": "Bearer your_token"}  # Example header
+body3 = {
+    "region": "India",
+    "newCases": 1000
+}
+response_body3 = {
+    "message": "Case count updated successfully"
+}
+display_api_output(url3, method3, headers3, body3, 200, response_body3)
