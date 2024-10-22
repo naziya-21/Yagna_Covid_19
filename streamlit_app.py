@@ -1,20 +1,20 @@
 import streamlit as st
-import json
+import pandas as pd
 
-# Function to display API request and simulated response
-def display_api_output(url, method, headers, body, status_code, response_body):
-    st.write("### Request")
-    st.write(f"**URL:** {url}")
-    st.write(f"**Method:** {method}")
-    if headers:
-        st.write(f"**Headers:** {json.dumps(headers, indent=2)}")
-    if body:
-        st.write(f"**Body:** {json.dumps(body, indent=2)}")
-    
-    # Simulated response
-    st.write("### Response")
-    st.write(f"**Status Code:** {status_code}")
-    st.write(f"**Body:** {json.dumps(response_body, indent=2)}")
+# Function to create a DataFrame for displaying in table format
+def create_request_response_table(url, method, headers, body, status_code, response_body):
+    data = {
+        "Field": ["URL", "Method", "Headers", "Body", "Status Code", "Response Body"],
+        "Value": [
+            url,
+            method,
+            str(headers) if headers else "None",
+            str(body) if body else "None",
+            status_code,
+            str(response_body)
+        ]
+    }
+    return pd.DataFrame(data)
 
 # Title of the app
 st.title("COVID-19 Tracking API Outputs")
@@ -32,7 +32,8 @@ response_body1 = {
     "recovered": 40000,
     "deaths": 10000
 }
-display_api_output(url1, method1, headers1, body1, 200, response_body1)
+table1 = create_request_response_table(url1, method1, headers1, body1, 200, response_body1)
+st.table(table1)
 
 # Screenshot 2: GET /covid/cases/{region}
 st.header("Screenshot 2: GET /covid/cases/{region}")
@@ -56,7 +57,8 @@ response_body2 = {
         "icuCapacity": 50
     }
 }
-display_api_output(url2, method2, headers2, body2, 200, response_body2)
+table2 = create_request_response_table(url2, method2, headers2, body2, 200, response_body2)
+st.table(table2)
 
 # Screenshot 3: POST /covid/cases/update
 st.header("Screenshot 3: POST /covid/cases/update")
@@ -70,4 +72,5 @@ body3 = {
 response_body3 = {
     "message": "Case count updated successfully"
 }
-display_api_output(url3, method3, headers3, body3, 200, response_body3)
+table3 = create_request_response_table(url3, method3, headers3, body3, 200, response_body3)
+st.table(table3)
