@@ -10,7 +10,7 @@ st.sidebar.write("Stay updated with real-time COVID-19 data.")
 @st.cache_data
 def load_data():
     # Replace with the path to your CSV file
-    url = "C:\\Users\\91833\\OneDrive\\Desktop\\country_wise_latest.csv"  # Provide the actual URL or file path
+    url = "C:/Users/91833/OneDrive/Desktop/country_wise_latest.csv"  # Provide the actual URL or file path
     data = pd.read_csv(url)
     return data
 
