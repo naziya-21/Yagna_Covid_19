@@ -1,55 +1,80 @@
 import streamlit as st
-import pandas as pd
+import requests
+import json
 
-# Configure the app
-st.set_page_config(page_title="COVID-19 Tracking and Info App")
-st.sidebar.header("COVID-19 Tracker")
-st.sidebar.write("Stay updated with real-time COVID-19 data.")
+# API base URL
+API_URL = "http://127.0.0.1:5000/covid"
 
-# Load data
-@st.cache_data
-def load_data():
-    # Replace with the path to your CSV file
-    url = "country_wise_latest.csv"
-  # Ensure this path is correct
-    try:
-        data = pd.read_csv(url)
-    except FileNotFoundError:
-        st.error("CSV file not found. Please check the file path.")
-        return pd.DataFrame()  # Return an empty DataFrame in case of error
-    return data
+# Function to display COVID data
+def display_covid_data():
+    st.header("COVID-19 Data")
+    
+    # Fetch current COVID-19 case numbers by region
+    response = requests.get(f"{API_URL}/cases")
+    if response.status_code == 200:
+        cases_data = response.json()
+        st.json(cases_data)
+    else:
+        st.error("Failed to retrieve COVID-19 data.")
 
-# Load the COVID-19 data
-covid_data = load_data()
+    # Update COVID-19 Data
+    st.subheader("Update COVID-19 Data")
+    region = st.text_input("Enter region (e.g., 'USA'):")
+    new_data = st.text_area("Enter new data as JSON (e.g., {'active_cases': 51000, 'recoveries': 46000, 'deaths': 5200})")
+    
+    if st.button("Update Data"):
+        try:
+            updates = json.loads(new_data)
+            payload = {"region": region, "updates": updates}
+            update_response = requests.post(f"{API_URL}/cases/update", json=payload)
+            if update_response.status_code == 200:
+                st.success("COVID-19 data updated successfully!")
+            else:
+                st.error(update_response.json().get("error", "Failed to update data."))
+        except json.JSONDecodeError:
+            st.error("Invalid JSON format.")
 
-# Display the app header
-st.header("COVID-19 Tracking and Information")
-st.subheader("Real-time updates on COVID-19 cases, vaccination, and hospital resources.")
+# Function to display vaccination status
+def display_vaccination_status():
+    st.header("Vaccination Status")
+    
+    # Fetch vaccination status
+    response = requests.get(f"{API_URL}/vaccination-status")
+    if response.status_code == 200:
+        vaccination_data = response.json()
+        st.json(vaccination_data)
+    else:
+        st.error("Failed to retrieve vaccination data.")
 
-# Display COVID-19 cases
-if not covid_data.empty:
-    if st.checkbox("Show COVID-19 Case Data"):
-        st.write("### Global and Regional COVID-19 Case Numbers")
-        st.write(covid_data)
+# Function to display hospital resources
+def display_hospital_resources():
+    st.header("Hospital Resources")
+    
+    # Fetch hospital resources
+    response = requests.get(f"{API_URL}/hospitals/resources")
+    if response.status_code == 200:
+        resources_data = response.json()
+        st.json(resources_data)
+    else:
+        st.error("Failed to retrieve hospital resources.")
+    
+    # Update Hospital Resources
+    st.subheader("Update Hospital Resources")
+    new_hospital_data = st.text_area("Enter new hospital resources as JSON (e.g., {'available_beds': 250})")
+    
+    if st.button("Update Hospital Resources"):
+        try:
+            updates = json.loads(new_hospital_data)
+            update_response = requests.post(f"{API_URL}/hospitals/resources/update", json=updates)
+            if update_response.status_code == 200:
+                st.success("Hospital resources updated successfully!")
+            else:
+                st.error(update_response.json().get("error", "Failed to update hospital resources."))
+        except json.JSONDecodeError:
+            st.error("Invalid JSON format.")
 
-    # Filter data by region
-    if "region" in covid_data.columns:
-        selected_region = st.selectbox("Select a Region", covid_data["region"].unique())
-        filtered_data = covid_data[covid_data["region"] == selected_region]
-
-        # Display region-specific data
-        st.write(f"### COVID-19 Statistics for {selected_region}")
-        st.write(filtered_data)
-
-        # Display vaccination status
-        if st.checkbox("Show Vaccination Status"):
-            st.write("### Vaccination Progress")
-            st.write(filtered_data[["region", "doses_given", "percent_vaccinated"]])
-
-        # Display hospital resources
-        if st.checkbox("Show Hospital Resources"):
-            st.write("### Hospital Resources Availability")
-            st.write(filtered_data[["region", "beds", "ventilators", "icu_capacity"]])
-
-# Footer
-st.write("Stay safe and stay informed with the COVID-19 Tracker.")
+# Main app layout
+st.title("Healthcare Data Dashboard")
+display_covid_data()
+display_vaccination_status()
+display_hospital_resources()
